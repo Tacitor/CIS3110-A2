@@ -22,6 +22,7 @@ c/bin/
 c/lib/
 c/obj/
 Assignment_1
+Assignment_2
 
 # Build artifacts placed in lib/ should be ignored,
 # but ship the prebuilt reference libraries.

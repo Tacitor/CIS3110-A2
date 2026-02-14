@@ -37,6 +37,10 @@ int readFile(char* fileName);//function to read the file content and build array
 
 int main(int argc, char *argv[])
 {
+	// Guarding for CLI args. Causes early return and program termination.
+
+	//TODO: call to
+	//readFile();
 
     //you can add some suitable code here if needed. Make sure all your data is set properly before this point
     
@@ -97,6 +101,7 @@ int totalTime()
 
 int scheduler()//implement this function as per the given description
 {
+	//TODO:
 	return 0;
 }
 
