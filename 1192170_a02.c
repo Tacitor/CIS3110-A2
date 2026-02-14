@@ -38,6 +38,25 @@ int readFile(char* fileName);//function to read the file content and build array
 int main(int argc, char *argv[])
 {
 	// Guarding for CLI args. Causes early return and program termination.
+	if (argc < 3) {
+        printf("ERROR: You must provide a timeQuantum AND an input file as a CLI arguments. Program Terminating.\n");
+        return 0;
+    } else if (argc > 3) {
+        printf("ERROR: You must provide ONLY a timeQuantum, and an input file as a CLI arguments. No other flags or arguments are allowed. Program Terminating.\n");
+        return 0;
+    }
+
+	// Try converting string to int
+	int num = atoi(argv[1]);
+
+	// Ensure proper formatting
+	if (num < 1) {
+        printf("ERROR: You must provide a timeQuantum that is GREATER than ZREO. Program Terminating.\n");
+		return 0;
+	}
+
+	// Assign to the global var
+	timeQuantum = (unsigned int)num;
 
 	//TODO: call to
 	//readFile();
