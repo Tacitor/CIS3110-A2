@@ -8,12 +8,22 @@
 
 //Datastructure definitions
 
+typedef enum p_state {
+  NEW = 0,
+  READY,
+  RUNNING,
+  TERMINATED
+} p_state;
+
 typedef struct process //represents a single process
 {
 	char pid[4];
 	unsigned int startTime;
 	unsigned int lifeTime;
 //add more members here as per requirement
+	p_state state;
+	unsigned int runningTime; // The time this task had had to run. Gets incremented every cycle it is in the running state. Should never be greater than the lifeTime.
+	unsigned int q_start; // The time its latest quatum started
 } Process;
 
 
@@ -22,6 +32,9 @@ Process* processes = NULL; //the array to store processes read from the file
 int processCount = 0; //count of total processes; update it after reading file
 unsigned int timeQuantum;//This is the timeQuantum; initialize it based on the command line argument
 time_t programClock;//the global timer/clock for the program
+
+int last_p_started_i = 0;
+int last_p_rr_i = 0;
 
 
 //Function prototypes
@@ -67,6 +80,7 @@ int main(int argc, char *argv[])
 	}
 
 	printf("total time: %d\n", totalTime());
+	// TODO: Test the 2nd sample file. Draw the timeline before testing.
 
     //you can add some suitable code here if needed. Make sure all your data is set properly before this point
     
@@ -154,6 +168,9 @@ int readFile(char* fileName)//use this method in a suitable way to read file
 
 			// Take the first (and only) three chars of the process number plus the null terminator
 			strncpy(processes[tempProcessCount].pid, tok, 4);
+			processes[tempProcessCount].state = NEW;
+			processes[tempProcessCount].runningTime = 0;
+			processes[tempProcessCount].q_start = 0;
 			parseCount++;
 		} else if (1 == parseCount) {
 			// Try converting string to int
@@ -223,14 +240,63 @@ int totalTime()
 	return largestTime;
 }
 
+void advanceRoundRobin() {
+	last_p_rr_i = last_p_rr_i == (processCount - 1) ? 0 : last_p_rr_i + 1;
+}
+
 int scheduler()//implement this function as per the given description
 {
-	//TODO:
-	if (0 == getCurrentTime() % timeQuantum) {
-		logRun("START");
-	} else {
-		logEndQuantum("TEST");
+	long int currentTime = getCurrentTime();
+
+	// Check for new arrivals and add them all
+	while (last_p_started_i < processCount && processes[last_p_started_i].startTime == currentTime) {
+		processes[last_p_started_i].state = READY;
+		logStart(processes[last_p_started_i].pid);
+		last_p_started_i++;
 	}
+
+	// Check if the process is ready for termination
+	if (RUNNING == processes[last_p_rr_i].state) {
+		processes[last_p_rr_i].runningTime++;
+
+		// FIRST check for needs termination
+		if (processes[last_p_rr_i].runningTime == processes[last_p_rr_i].lifeTime) {
+			processes[last_p_rr_i].state = TERMINATED;
+			logFinish(processes[last_p_rr_i].pid);
+			advanceRoundRobin();
+		}
+		
+		// How long has the duration of this quatum been?
+		int q_duration = currentTime - processes[last_p_rr_i].q_start;
+		// SECOND check for done time quatum, force the round robin
+		// Ensure the task is STILL in the running state and not since terminated 
+		if (0 == (q_duration % (long int)timeQuantum) && RUNNING == processes[last_p_rr_i].state) {
+			processes[last_p_rr_i].state = READY;
+			logEndQuantum(processes[last_p_rr_i].pid);
+			advanceRoundRobin();
+		}
+	}
+
+	// There is a chance after advanceRoundRobin() was called that the state of the next task is now NEW or TERMINATED.
+	// Neither of these need to ever be ran. So advance past them.
+	if (RUNNING != processes[last_p_rr_i].state && READY != processes[last_p_rr_i].state){
+		// Go around the robin once to see if any other tasks are in the READY state.
+		// Only go once to prevent an infinite loop.
+		int robinStart = last_p_rr_i;
+
+		do
+		{
+			advanceRoundRobin();
+		} while (last_p_rr_i != robinStart && READY != processes[last_p_rr_i].state);
+		// TODO: What should the scheduler do if idle? Skip ^^^ to next task? Wait? Ask TA?
+	}
+	
+	if (READY == processes[last_p_rr_i].state) {
+		processes[last_p_rr_i].state = RUNNING;
+		processes[last_p_rr_i].q_start = currentTime;
+		logRun(processes[last_p_rr_i].pid);
+	}
+	
 	return 0;
 }
 
