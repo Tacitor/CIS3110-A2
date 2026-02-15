@@ -74,14 +74,6 @@ int main(int argc, char *argv[])
 	timeQuantum = (unsigned int)num;
 
 	readFile(argv[2]);
-
-	for (int i = 0; i < processCount; i++) {
-		printf("PID: %s\tstart: %d\tlife: %d\n", processes[i].pid, processes[i].startTime, processes[i].lifeTime);
-	}
-
-	printf("total time: %d\n", totalTime());
-	// TODO: Test the 2nd sample file. Draw the timeline before testing.
-
     //you can add some suitable code here if needed. Make sure all your data is set properly before this point
     
 	startClock();//do not remove this line
