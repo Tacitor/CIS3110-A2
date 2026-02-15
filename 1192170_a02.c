@@ -4,6 +4,8 @@
 #include <sys/stat.h>
 #include <time.h>
 
+#define FILE_DELIMETERS ";\r\n"
+
 //Datastructure definitions
 
 typedef struct process //represents a single process
@@ -58,8 +60,7 @@ int main(int argc, char *argv[])
 	// Assign to the global var
 	timeQuantum = (unsigned int)num;
 
-	//TODO: call to
-	//readFile();
+	readFile(argv[2]);
 
     //you can add some suitable code here if needed. Make sure all your data is set properly before this point
     
@@ -82,6 +83,67 @@ int main(int argc, char *argv[])
 
 int readFile(char* fileName)//use this method in a suitable way to read file
 {
+	int returnSuccess;
+	long fileCharNum;
+	char *taskString;
+
+	FILE *inputFile = fopen(fileName, "r");
+
+	if (inputFile == NULL) {
+        printf("ERROR: Could not open file %s. Program Terminating.\n", fileName);
+        return 0;
+    }
+
+	returnSuccess = fseek(inputFile, 0, SEEK_END);
+
+    // Guarding for moving file pointer to end of file so its size can be found. Causes early return and program termination.
+    if (returnSuccess !=0 ) {
+        printf("ERROR: Could not seek to end of %s. Program Terminating.\n", fileName);
+        return 0;
+    }
+
+    fileCharNum = ftell(inputFile);
+	if (-1 == fileCharNum) {
+        printf("ERROR: Could not tell the length of file %s. Program Terminating.\n", fileName);
+        return 0;
+    }
+
+    // Guarding for moving file pointer back to the start of file so can now be read into mem. Causes early return and program termination.
+    returnSuccess = fseek(inputFile, 0, SEEK_SET);
+    
+    if (returnSuccess !=0 ) {
+        printf("ERROR: Could not seek back to start of %s. Program Terminating.\n", fileName);
+        return 0;
+    }
+
+    taskString = calloc((fileCharNum + 1), sizeof(char));
+
+	if (NULL == taskString) {
+        printf("ERROR: Could not allocate enough memory to fit %ld characters from %s. Program Terminating.\n", fileCharNum, fileName);
+        return 0;
+    }
+
+    size_t elmtRead = fread(taskString, sizeof(char), fileCharNum, inputFile);
+    returnSuccess = fclose(inputFile);
+
+	if (returnSuccess !=0 ) {
+        printf("ERROR: Could not close the file %s. Program Terminating.\n", fileName);
+        return 0;
+    }
+
+    if (((size_t)fileCharNum) != elmtRead) {
+        printf("ERROR: Bad read from %s. Size read does not match size of file. Program Terminating.\n", fileName);
+        return 0;
+    }
+
+	// Split the string on using the '\n' or '\r' or ';' deliminator
+	char *tok = strtok(taskString, FILE_DELIMETERS);
+
+	while (NULL != tok) {
+		printf("%s\n", tok);
+		tok = strtok(NULL, FILE_DELIMETERS);
+	}
+
 	return 0;
 }
 
