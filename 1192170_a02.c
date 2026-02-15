@@ -62,6 +62,12 @@ int main(int argc, char *argv[])
 
 	readFile(argv[2]);
 
+	for (int i = 0; i < processCount; i++) {
+		printf("PID: %s\tstart: %d\tlife: %d\n", processes[i].pid, processes[i].startTime, processes[i].lifeTime);
+	}
+
+	printf("total time: %d\n", totalTime());
+
     //you can add some suitable code here if needed. Make sure all your data is set properly before this point
     
 	startClock();//do not remove this line
@@ -138,11 +144,48 @@ int readFile(char* fileName)//use this method in a suitable way to read file
 
 	// Split the string on using the '\n' or '\r' or ';' deliminator
 	char *tok = strtok(taskString, FILE_DELIMETERS);
+	int parseCount = 0;
+	int tempProcessCount = 0;
 
 	while (NULL != tok) {
-		printf("%s\n", tok);
+		if (0 == parseCount) {
+			// Enlarge array by 1
+			processes = realloc(processes, sizeof(Process) * (tempProcessCount + 1));
+
+			// Take the first (and only) three chars of the process number plus the null terminator
+			strncpy(processes[tempProcessCount].pid, tok, 4);
+			parseCount++;
+		} else if (1 == parseCount) {
+			// Try converting string to int
+			int num = atoi(tok);
+
+			// Do not ensure proper formatting since the error return value of atoi is 0. 0 is a valid value soo.... no check
+			
+			processes[tempProcessCount].startTime = num;
+			parseCount++;
+		} else if (2 == parseCount) {
+			// Try converting string to int
+			int num = atoi(tok);
+
+			// Ensure proper formatting
+			// TODO: Is a lifetime of 0 invalid?? Ask TA??
+			if (num < 1) {
+				printf("ERROR: You must provide lifeTime in correct format. Must be greater than 0. Program Terminating.\n");
+				return 0;
+			}
+
+			processes[tempProcessCount].lifeTime = num;
+			parseCount = 0;
+			tempProcessCount++;
+		} else {
+			printf("ERROR: You must provide input file in correct format. Program Terminating.\n");
+		}
+
 		tok = strtok(NULL, FILE_DELIMETERS);
 	}
+
+	// Update after reading the file
+	processCount = tempProcessCount;
 
 	return 0;
 }
@@ -183,6 +226,11 @@ int totalTime()
 int scheduler()//implement this function as per the given description
 {
 	//TODO:
+	if (0 == getCurrentTime() % timeQuantum) {
+		logRun("START");
+	} else {
+		logEndQuantum("TEST");
+	}
 	return 0;
 }
 
