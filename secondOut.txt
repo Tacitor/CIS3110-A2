@@ -1,0 +1,25 @@
+[0] New process with ID p01 is arrived.
+[0] New process with ID p02 is arrived.
+[0] New process with ID p03 is arrived.
+[0] Process with ID p01 started its time quantum.
+[2] New process with ID p04 is arrived.
+[7] Process with ID p01 finished its time quantum.
+[7] Process with ID p02 started its time quantum.
+[10] New process with ID p05 is arrived.
+[10] process with ID p02 is finished.
+[10] Process with ID p03 started its time quantum.
+[17] Process with ID p03 finished its time quantum.
+[17] Process with ID p04 started its time quantum.
+[24] Process with ID p04 finished its time quantum.
+[24] Process with ID p05 started its time quantum.
+[30] process with ID p05 is finished.
+[30] Process with ID p01 started its time quantum.
+[37] Process with ID p01 finished its time quantum.
+[37] Process with ID p03 started its time quantum.
+[38] process with ID p03 is finished.
+[38] Process with ID p04 started its time quantum.
+[45] process with ID p04 is finished.
+[45] Process with ID p01 started its time quantum.
+[52] Process with ID p01 finished its time quantum.
+[52] Process with ID p01 started its time quantum.
+[55] process with ID p01 is finished.
