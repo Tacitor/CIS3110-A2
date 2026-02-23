@@ -90,6 +90,8 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	free(processes);
+
 	return 0;
 }
 
@@ -176,18 +178,22 @@ int readFile(char* fileName)//use this method in a suitable way to read file
 			// Try converting string to int
 			int num = atoi(tok);
 
-			// Ensure proper formatting
-			// TODO: Is a lifetime of 0 invalid?? Ask TA??
-			if (num < 1) {
-				printf("ERROR: You must provide lifeTime in correct format. Must be greater than 0. Program Terminating.\n");
-				return 0;
-			}
-
 			processes[tempProcessCount].lifeTime = num;
 			parseCount = 0;
-			tempProcessCount++;
+
+			// Ensure proper formatting
+			// Jacob said to just not add this task to the list.
+			if (num < 1) {
+				// printf("ERROR: You must provide lifeTime in correct format. Must be greater than 0. Program Terminating.\n");
+				// Discard this process!!
+				// Do NOT increment tempProcessCount so that it can be overwritten by the next valid task.
+
+				processes[tempProcessCount].state = TERMINATED; //In the case this is the last task and does not get over written mark is so that it does not get started
+			} else {
+				tempProcessCount++;
+			}
 		} else {
-			printf("ERROR: You must provide input file in correct format. Program Terminating.\n");
+			printf("ERROR: You must provide input file in correct format.\n");
 		}
 
 		tok = strtok(NULL, FILE_DELIMETERS);
@@ -195,6 +201,8 @@ int readFile(char* fileName)//use this method in a suitable way to read file
 
 	// Update after reading the file
 	processCount = tempProcessCount;
+
+	free(taskString);
 
 	return 0;
 }
@@ -241,7 +249,7 @@ int scheduler()//implement this function as per the given description
 	long int currentTime = getCurrentTime();
 
 	// Check for new arrivals and add them all
-	while (last_p_started_i < processCount && processes[last_p_started_i].startTime == currentTime) {
+	while (last_p_started_i < processCount && NEW == processes[last_p_started_i].state && processes[last_p_started_i].startTime == currentTime) {
 		processes[last_p_started_i].state = READY;
 		logStart(processes[last_p_started_i].pid);
 		last_p_started_i++;
@@ -281,6 +289,7 @@ int scheduler()//implement this function as per the given description
 			advanceRoundRobin();
 		} while (last_p_rr_i != robinStart && READY != processes[last_p_rr_i].state);
 		// TODO: What should the scheduler do if idle? Skip ^^^ to next task? Wait? Ask TA?
+		// Yes Jacob said this is correct.
 	}
 	
 	if (READY == processes[last_p_rr_i].state) {
